@@ -11,8 +11,6 @@ import { useParkingSearchStore } from "@/stores/parkingSearchStore";
 function App() {
   const { parkingName } = useParkingSearchStore();
 
-  const appVersion = import.meta.env.VITE_APP_VERSION || 'Dev Mode';
-
   const { data, isPending, isError } = useQuery({
     queryKey: [PARKINGS_QUERY_KEY, { parkingName }],
     queryFn: () => ParkingsAngersEndpointsQueryMethods.getAllParkings(parkingName),
@@ -34,7 +32,7 @@ function App() {
       {isError && <span>Something went wrong with the backend ...</span>}
       {data && <ParkingList parkings={data.parkings} />}
       <footer className="text-xs text-gray-400 mt-10">
-        ParkNDeploy v{appVersion}
+        ParkNDeploy v{APP_VERSION}
       </footer>
     </div>
   );
