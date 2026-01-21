@@ -41,7 +41,7 @@ jobs:
       - name: Upload Frontend Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-dist
+          name: frontend-build
           path: ./frontend/dist
           retention-days: 1
 
@@ -64,7 +64,7 @@ jobs:
       - name: Upload Backend Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: backend-publish
+          name: backend-build
           path: ./backend/publish_output
           retention-days: 1
 
@@ -73,6 +73,7 @@ jobs:
   deploy_infrastructure:
     runs-on: ubuntu-latest
     environment: production
+    needs: [ci_frontend, ci_backend]
 
     outputs:
       appServiceName: ${{ steps.bicep_deploy.outputs.appServiceName }}
@@ -110,14 +111,14 @@ jobs:
   deploy_frontend:
     runs-on: ubuntu-latest
     environment: production
-    needs: [deploy_infrastructure, ci_frontend]
+    needs: [deploy_infrastructure]
 
     steps:
 
       - name: Download Frontend Artifact
         uses: actions/download-artifact@v4
         with:
-          name: frontend-dist
+          name: frontend-build
           path: ./frontend-ready
 
       - name: Login to Azure 
@@ -136,7 +137,7 @@ jobs:
         uses: azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ env.SWA_DEPLOYMENT_TOKEN }}
-          app_location: frontend/dist
+          app_location: ./front-ready
           action: upload
           skip_app_build: true
           skip_api_build: true
@@ -144,13 +145,13 @@ jobs:
   deploy_backend:
     runs-on: ubuntu-latest
     environment: production
-    needs: [deploy_infrastructure, ci_backend]
+    needs: [deploy_infrastructure]
 
     steps:
       - name: Download Backend Artifact
         uses: actions/download-artifact@v4
         with:
-          name: backend-publish
+          name: backend-build
           path: ./backend-ready
 
       - name: Login to Azure 
@@ -164,5 +165,5 @@ jobs:
         uses: azure/webapps-deploy@v2
         with: 
           app-name: ${{ needs.deploy_infrastructure.outputs.appServiceName }} # Access to the previous job output to get the appServiceName deployed with bicep
-          package: ./backend/ParkNDeploy.Api/publish # Path to the previously published app
+          package: ./backend-ready
   
