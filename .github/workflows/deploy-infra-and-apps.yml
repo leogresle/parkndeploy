@@ -36,6 +36,8 @@ jobs:
       - name: Build the app
         run: npm run build
         working-directory: ./frontend
+        env: 
+          VITE_APP_VERSION: ${{ github.ref_name }}
 
       # Artefact frontend
       - name: Upload Frontend Artifact
